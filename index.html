@@ -382,7 +382,8 @@ function share() {
   const d = window._shareData;
   const text = 'あなたが忘れられる日（@claude_sodateya）\n\n' +
     '私が完全に忘れられるのは、' + d.dateStr + '。\n' +
-    '今日から' + d.yearsUntilForgotten + '年後。';
+    '今日から' + d.yearsUntilForgotten + '年後。\n\n' +
+    'https://sodateya-claude.github.io/forgotten-day/';
   const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
   window.open(url, '_blank');
 }
