@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>あなたが忘れられる日</title>
+<meta property="og:title" content="あなたが忘れられる日">
+<meta property="og:description" content="あなたが完全に忘れられる日を計算します。">
+<meta property="og:type" content="website">
+<style>
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #ffffff;
+  color: #111111;
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 60px 20px;
+  line-height: 1.8;
+}
+
+.container {
+  max-width: 400px;
+  width: 100%;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin-bottom: 12px;
+  letter-spacing: 0.02em;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  margin-bottom: 48px;
+  line-height: 1.6;
+}
+
+.form-group {
+  margin-bottom: 28px;
+}
+
+label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 8px;
+}
+
+input[type="date"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 10px 12px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  color: #111111;
+  background: #ffffff;
+  border: 1.5px solid #111111;
+  border-radius: 0;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+}
+
+.optional {
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  color: #111111;
+  background: #ffffff;
+  border: 1.5px solid #111111;
+  border-radius: 0;
+  cursor: pointer;
+  margin-top: 40px;
+}
+
+.btn:hover {
+  background: #ffffff;
+}
+
+.btn-share {
+  color: #ffffff;
+  background: #111111;
+  border: 1.5px solid #111111;
+}
+
+.btn-share:hover {
+  background: #111111;
+}
+
+/* Result screen */
+#result {
+  display: none;
+}
+
+.result-date {
+  font-size: 1.8rem;
+  font-weight: normal;
+  margin: 40px 0 16px;
+  letter-spacing: 0.03em;
+}
+
+.result-remaining {
+  font-size: 0.95rem;
+  margin-bottom: 40px;
+  line-height: 1.8;
+}
+
+.result-detail {
+  border-top: 1.5px solid #111111;
+  padding-top: 24px;
+  margin-bottom: 40px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 8px 0;
+  border-bottom: 1px solid #111111;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-label {
+  opacity: 0.7;
+}
+
+.result-message {
+  font-size: 0.9rem;
+  line-height: 2;
+  margin-bottom: 48px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Input screen -->
+  <div id="input">
+    <h1>あなたが忘れられる日</h1>
+    <p class="subtitle">
+      あなたが誰からも思い出されなくなる日を、<br>
+      いくつかの質問から推定します。
+    </p>
+
+    <div class="form-group">
+      <label for="birthday">生年月日</label>
+      <input type="date" id="birthday" required>
+    </div>
+
+    <div class="form-group">
+      <label for="children">子どもの数</label>
+      <select id="children">
+        <option value="0">いない</option>
+        <option value="1">1人</option>
+        <option value="2">2人</option>
+        <option value="3">3人以上</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="closeFriends">親しい友人の数</label>
+      <select id="closeFriends">
+        <option value="0">ほぼいない</option>
+        <option value="3">数人</option>
+        <option value="10">10人くらい</option>
+        <option value="30">30人以上</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="followers">SNSフォロワー数<span class="optional">（任意）</span></label>
+      <input type="number" id="followers" placeholder="0" min="0">
+    </div>
+
+    <button class="btn" onclick="calculate()">計算する</button>
+  </div>
+
+  <!-- Result screen -->
+  <div id="result" class="fade-in">
+    <p class="subtitle">あなたが完全に忘れられるのは</p>
+
+    <p class="result-date" id="forgottenDate"></p>
+
+    <p class="result-remaining" id="forgottenRemaining"></p>
+
+    <div class="result-detail">
+      <div class="detail-row">
+        <span class="detail-label">推定寿命</span>
+        <span id="detailLifespan"></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">没後の記憶期間</span>
+        <span id="detailMemory"></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">最後に思い出す人</span>
+        <span id="detailLastPerson"></span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">デジタルの痕跡</span>
+        <span id="detailDigital"></span>
+      </div>
+    </div>
+
+    <p class="result-message" id="resultMessage"></p>
+
+    <div class="buttons">
+      <button class="btn btn-share" onclick="share()">X でシェア</button>
+      <button class="btn" onclick="retry()">もう一度</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function calculate() {
+  const birthdayInput = document.getElementById('birthday').value;
+  if (!birthdayInput) {
+    return;
+  }
+
+  const birthday = new Date(birthdayInput);
+  const now = new Date();
+  const age = (now - birthday) / (365.25 * 24 * 60 * 60 * 1000);
+
+  if (age < 0 || age > 120) {
+    return;
+  }
+
+  const children = parseInt(document.getElementById('children').value);
+  const closeFriends = parseInt(document.getElementById('closeFriends').value);
+  const followers = parseInt(document.getElementById('followers').value) || 0;
+
+  // Life expectancy (Japan average ~85, slightly adjusted by current age)
+  const baseLifeExpectancy = 85;
+  const lifeExpectancy = Math.max(baseLifeExpectancy, age + 5);
+  const deathYear = birthday.getFullYear() + Math.round(lifeExpectancy);
+
+  // Memory duration after death
+  // Base: people are remembered ~20 years after death by close ones
+  let memoryYears = 20;
+
+  // Children extend memory significantly (they remember you for their lifetime)
+  if (children >= 1) memoryYears += 30;
+  if (children >= 2) memoryYears += 10;
+  if (children >= 3) memoryYears += 8;
+
+  // Close friends add some years
+  if (closeFriends >= 3) memoryYears += 5;
+  if (closeFriends >= 10) memoryYears += 5;
+  if (closeFriends >= 30) memoryYears += 5;
+
+  // Digital presence (logarithmic impact)
+  let digitalYears = 0;
+  if (followers > 0) {
+    digitalYears = Math.min(Math.floor(Math.log10(followers + 1) * 8), 40);
+  }
+  memoryYears += digitalYears;
+
+  // Add some deterministic "randomness" based on birthday
+  const seed = birthday.getDate() + birthday.getMonth() * 31;
+  const variation = (seed % 7) - 3; // -3 to +3
+  memoryYears += variation;
+
+  memoryYears = Math.max(memoryYears, 10);
+
+  // Calculate the forgotten date
+  const forgottenYear = deathYear + memoryYears;
+  const forgottenMonth = (birthday.getMonth() + seed) % 12;
+  const forgottenDay = Math.min(birthday.getDate(), 28);
+  const forgottenDate = new Date(forgottenYear, forgottenMonth, forgottenDay);
+
+  // Days from now until forgotten
+  const daysUntilForgotten = Math.floor((forgottenDate - now) / (24 * 60 * 60 * 1000));
+  const yearsUntilForgotten = Math.floor(daysUntilForgotten / 365);
+
+  // Determine last person type
+  let lastPerson;
+  if (children >= 1) {
+    lastPerson = 'あなたの子ども';
+  } else if (closeFriends >= 10) {
+    lastPerson = '親しい友人の誰か';
+  } else if (followers >= 1000) {
+    lastPerson = 'あなたを知らないフォロワー';
+  } else if (closeFriends >= 3) {
+    lastPerson = '昔の友人';
+  } else {
+    lastPerson = '遠い親戚';
+  }
+
+  // Digital trace description
+  let digitalTrace;
+  if (followers >= 10000) {
+    digitalTrace = 'しばらく残る';
+  } else if (followers >= 100) {
+    digitalTrace = 'やがて埋もれる';
+  } else {
+    digitalTrace = 'ほぼ残らない';
+  }
+
+  // Message
+  let message;
+  if (yearsUntilForgotten > 150) {
+    message = 'あなたの記憶は長く残ります。\nでも、永遠ではありません。';
+  } else if (yearsUntilForgotten > 100) {
+    message = 'あなたを知る人がいなくなっても、\nしばらくは名前だけが残るでしょう。';
+  } else if (yearsUntilForgotten > 60) {
+    message = 'あなたが残した言葉や写真を、\n誰かがふと思い出す日が来るでしょう。\nそれが、最後の日です。';
+  } else {
+    message = 'すべての人は忘れられます。\nでも、今日誰かに会うことはできます。';
+  }
+
+  // Format date
+  const year = forgottenDate.getFullYear();
+  const month = forgottenDate.getMonth() + 1;
+  const day = forgottenDate.getDate();
+  const dateStr = year + '年' + month + '月' + day + '日';
+
+  // Render
+  document.getElementById('forgottenDate').textContent = dateStr;
+  document.getElementById('forgottenRemaining').innerHTML =
+    '今日から<strong>' + yearsUntilForgotten + '年後</strong>、あなたの記憶は消えます。';
+  document.getElementById('detailLifespan').textContent = Math.round(lifeExpectancy) + '歳';
+  document.getElementById('detailMemory').textContent = memoryYears + '年';
+  document.getElementById('detailLastPerson').textContent = lastPerson;
+  document.getElementById('detailDigital').textContent = digitalTrace;
+  document.getElementById('resultMessage').textContent = message;
+
+  // Store for share
+  window._shareData = {
+    dateStr: dateStr,
+    yearsUntilForgotten: yearsUntilForgotten
+  };
+
+  // Show result
+  document.getElementById('input').style.display = 'none';
+  document.getElementById('result').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function share() {
+  const d = window._shareData;
+  const text = 'あなたが忘れられる日（@claude_sodateya）\n\n' +
+    '私が完全に忘れられるのは、' + d.dateStr + '。\n' +
+    '今日から' + d.yearsUntilForgotten + '年後。';
+  const url = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(text);
+  window.open(url, '_blank');
+}
+
+function retry() {
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('input').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// Set default max date to today
+document.getElementById('birthday').max = new Date().toISOString().split('T')[0];
+</script>
+
+</body>
+</html>
